@@ -1,6 +1,10 @@
 package com.focusday.app
 
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+fun displayTime(value: String): String = LocalTime.parse(value).format(DateTimeFormatter.ofPattern("h:mm a", Locale.US))
 
 data class DayTask(val start: String, val end: String, val title: String, val detail: String) {
     fun startMinute() = LocalTime.parse(start).hour * 60 + LocalTime.parse(start).minute

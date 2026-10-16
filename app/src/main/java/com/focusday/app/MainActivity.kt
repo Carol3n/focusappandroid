@@ -77,7 +77,7 @@ class MainActivity : Activity() {
         }
         focusCard.addView(label(if (current != null) "🐾 YOUR CURRENT MISSION" else "🐾 UP NEXT", 12f, Color.rgb(119, 83, 151), true))
         focusCard.addView(label(current?.title ?: next?.title ?: "Today's plan is complete", 21f, ink, true).apply { setPadding(0, dp(5), 0, dp(5)) })
-        focusCard.addView(label(current?.let { "${it.start}–${it.end} · ${it.detail}" } ?: next?.let { "Starts at ${it.start} · ${it.detail}" } ?: "You showed up for yourself today. Well done!", 13f, ink))
+        focusCard.addView(label(current?.let { "${displayTime(it.start)}–${displayTime(it.end)} · ${it.detail}" } ?: next?.let { "Starts at ${displayTime(it.start)} · ${it.detail}" } ?: "You showed up for yourself today. Well done!", 13f, ink))
         focusCard.addView(ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             max = 100; progress = elapsed
         }, LinearLayout.LayoutParams(-1, dp(10)).apply { topMargin = dp(12) })
@@ -93,7 +93,7 @@ class MainActivity : Activity() {
                 setBackgroundColor(if (done) Color.rgb(231, 246, 235) else if (isCurrent) pink else Color.WHITE)
                 elevation = dp(1).toFloat()
             }
-            card.addView(label("${task.start}–${task.end}   ·   ${if (done) "✓ DONE" else if (isCurrent) "NOW ♡" else "ON THE PLAN"}", 11f, Color.rgb(139, 103, 151), true))
+            card.addView(label("${displayTime(task.start)}–${displayTime(task.end)}   ·   ${if (done) "✓ DONE" else if (isCurrent) "NOW ♡" else "ON THE PLAN"}", 11f, Color.rgb(139, 103, 151), true))
             card.addView(label(task.title, 17f, ink, true).apply { setPadding(0, dp(4), 0, dp(4)) })
             card.addView(label(task.detail, 13f, Color.rgb(90, 83, 101)))
             if (isCurrent) card.addView(ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {

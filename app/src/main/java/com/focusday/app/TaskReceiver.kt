@@ -5,6 +5,8 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.media.AudioAttributes
+import android.provider.Settings
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -27,7 +29,7 @@ class TaskReceiver : BroadcastReceiver() {
 
     companion object {
         private const val CHANNEL_STATUS = "focusday_status"
-        private const val CHANNEL_ALARMS = "focusday_alarms"
+        private const val CHANNEL_ALARMS = "focusday_alarms_v2"
         private const val NOTIFICATION_STATUS = 4001
         private const val NOTIFICATION_ALARM_BASE = 5000
         private const val EXTRA_ACTION = "focusday_action"
@@ -45,8 +47,13 @@ class TaskReceiver : BroadcastReceiver() {
                 nm.createNotificationChannel(NotificationChannel(
                     CHANNEL_ALARMS, "FocusDay task alarms", NotificationManager.IMPORTANCE_HIGH
                 ).apply {
-                    description = "Alerts when a task starts and when it ends."
+                    description = "Sounds and vibrates when a task starts or its time is up."
                     enableVibration(true)
+                    setSound(
+                        Settings.System.DEFAULT_NOTIFICATION_URI,
+                        AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).build()
+                    )
+                    lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 })
             }
         }
@@ -57,10 +64,10 @@ class TaskReceiver : BroadcastReceiver() {
             val isStart = kind == "start"
             val title = if (isStart) "Task starting now: ${task.title}" else "Task finished: ${task.title}"
             val body = if (isStart) {
-                "${task.start}–${task.end}. ${task.detail}"
+                "${displayTime(task.start)}–${displayTime(task.end)}. ${task.detail}"
             } else {
                 val next = TaskData.tasks.getOrNull(index + 1)
-                if (next != null) "Time's up. Next: ${next.title} at ${next.start}." else "Time's up. Your planned tasks for today are finished."
+                if (next != null) "Time's up. Next: ${next.title} at ${displayTime(next.start)}." else "Time's up. Your planned tasks for today are finished."
             }
             val openIntent = PendingIntent.getActivity(
                 context, 1, Intent(context, MainActivity::class.java),
@@ -75,6 +82,8 @@ class TaskReceiver : BroadcastReceiver() {
                 .setStyle(Notification.BigTextStyle().bigText(body))
                 .setContentIntent(openIntent)
                 .setAutoCancel(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setCategory(Notification.CATEGORY_ALARM)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .build()
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -92,12 +101,12 @@ class TaskReceiver : BroadcastReceiver() {
             val progress: Int
             if (task != null) {
                 title = "Now: ${task.title}"
-                detail = "${task.start}–${task.end} · ${task.detail}"
+                detail = "${displayTime(task.start)}–${displayTime(task.end)} · ${task.detail}"
                 val elapsed = minute - task.startMinute()
                 progress = ((elapsed.toFloat() / (task.endMinute() - task.startMinute())) * 100).toInt().coerceIn(0, 100)
             } else if (nextTask != null) {
                 title = "Up next: ${nextTask.title}"
-                detail = "Starts ${nextTask.start} · ${nextTask.detail}"
+                detail = "Starts ${displayTime(nextTask.start)} · ${nextTask.detail}"
                 progress = 0
             } else {
                 title = "Plan complete for today"
@@ -118,6 +127,8 @@ class TaskReceiver : BroadcastReceiver() {
                 .setStyle(Notification.BigTextStyle().bigText(detail))
                 .setContentIntent(openIntent)
                 .setOngoing(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setCategory(Notification.CATEGORY_STATUS)
                 .setOnlyAlertOnce(true)
                 .setProgress(100, progress, false)
                 .build()

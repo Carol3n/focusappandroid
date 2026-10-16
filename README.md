@@ -38,3 +38,8 @@ The icon and welcome image are already connected in the source: the manifest use
 - Samsung/Android battery settings may delay scheduled alarms.
 - The walking cat is an Android live wallpaper, not a cat overlay on top of the existing lock screen. Whether it can be set on the lock screen depends on the phone's One UI version.
 - A debug APK built on a fresh GitHub runner may not install as an update over an older debug APK because the signing key can differ. If Android says “App not installed”, uninstall the older FocusDay app first, then install the new APK. Uninstalling clears the app's locally stored task completion states.
+
+
+## Lock-screen notifications and time format
+
+The app maintains an ongoing current-task notification with progress and shows start/end alert notifications using the Android default notification sound and vibration. Times are displayed in 12-hour format (for example, 2:00 PM), while internal scheduling remains in 24-hour time. Android lock-screen notification settings must allow FocusDay notifications to be shown. On some Android/Samsung devices, enable Settings → Notifications → Lock screen notifications and allow FocusDay on the lock screen. Do Not Disturb, notification sound settings, battery restrictions, and exact-alarm permissions can affect alerts.
